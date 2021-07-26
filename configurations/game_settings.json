@@ -1,0 +1,56 @@
+{
+    "Info": "This is where we store settings for all the different portions of the game.",
+    "currency_name": "Coins",
+    "cogs": {
+        "character": {
+            "commands": {
+                "profile": {
+                    "aliases": [
+                        "character",
+                        "rpg",
+                        "CHARACTER",
+                        "PROFILE",
+                        "RPG"
+                    ],
+                    "color": [
+                        10,
+                        10,
+                        10
+                    ],
+                    "cooldown": 5
+                }
+            }
+        },
+        "mine": {
+            "commands": {
+                "mine": {
+                    "aliases": [
+                        "MINE",
+                        "dig",
+                        "DIG",
+                        "mining",
+                        "MINING"
+                    ],
+                    "color": [
+                        117,
+                        89,
+                        54
+                    ],
+                    "materials": {
+                        "Iron":     10, 
+                        "Diamond":  4,  
+                        "Copper":   15, 
+                        "Coal":     15, 
+                        "Gold":     10, 
+                        "Lead":     10, 
+                        "Silver":   10,       
+                        "Tin":      10, 
+                        "Stone":    15, 
+                        "Ruby":     1
+                    },
+                    "cooldown": 30
+                }
+            }
+        }
+    }
+}

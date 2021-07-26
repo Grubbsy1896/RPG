@@ -1,0 +1,10 @@
+{
+    "Format": "<:emoji_name:id>",
+    "info": "It is very important to insert the emojis like that so the bot will work. :) if it's empty, no emoji will be inserted.",
+    "health": "<:health:868860146347028561>",
+    "mana": "<:mana:868860146598690857>", 
+    "cash": "<:cash:868860140416294922>",
+    "mine": "",
+    "xp": "<:xp:869239255065567282>",
+    "level": "<:level:869239254960734248>"
+}
