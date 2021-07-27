@@ -14,6 +14,7 @@ from discord.ext import tasks, commands
 from discord.ext.commands.bot import Bot
 from discord.utils import get
 from discord.ext.commands import has_permissions, MissingPermissions
+from discord_components import DiscordComponents, Button, ButtonStyle, InteractionType
 
 # General Imports 
 import sys
@@ -51,9 +52,12 @@ client.currency = str(game_settings['currency_name'])
 # > Functions
 # --
 
-def get_player(ctx):
-    id = ctx.author.id
-    name = ctx.author.name
+def get_player(ctx, id=0, name=0):  # This 
+    if id == name:
+        id = ctx.author.id
+        name = ctx.author.name
+    else:
+        pass
     print(client.players)
     id = str(id)
     if id not in client.players:
@@ -92,10 +96,11 @@ def get_player(ctx):
 @client.event
 async def on_ready(): # When the bot connects to discord it prints the following message.
     print(f"{client.user} has connected to discord.")
+    DiscordComponents(client)
 
 
 # Running the bot.
 
 client.load_extension("cogs.character") # "cogs.mine", 
-
+client.load_extension("cogs.mine")
 client.run(token)

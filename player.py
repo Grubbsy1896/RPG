@@ -19,7 +19,7 @@ import sqlite3
 #
 
 class Player(): # Subclassing Discord's Member.
-    def __init__(self, id, name, cash=0, xp=0, level=0, health=100, mana=0, max_mana=10, skillpoints = 0, skills={}, inventory={}, materials={}, equipped_gear={}, job=""):
+    def __init__(self, id, name, cash=0, xp=0, level=0, health=100, mana=0, max_mana=10, skillpoints = 0, skills=None, inventory=None, materials=None, equipped_gear=None, job=""):
         
         self.id = id
         self.name = name
@@ -30,12 +30,35 @@ class Player(): # Subclassing Discord's Member.
         self.mana = mana
         self.max_mana = max_mana
         self.skillpoints = skillpoints
+        self.job = job
+
+
         self.skills = skills
         self.inventory = inventory
         self.materials = materials
         self.equipped_gear = equipped_gear
-        self.job = job
-    
+
+        if self.skills is None:
+            self.skills = {}    
+        else:
+            self.skills = skills
+
+        if self.inventory is None:
+            self.inventory = {}    
+        else:
+            self.skills = skills
+
+        if self.materials is None:
+            self.materials = {}
+        else:
+            self.materials = materials
+        
+        if self.equipped_gear is None:
+            self.equipped_gear = {}    
+        else:
+            self.equipped_gear = equipped_gear
+
+
         
 
     def save_data(self):
@@ -96,12 +119,19 @@ class Player(): # Subclassing Discord's Member.
             return True
         return False      
 
-    def add_material(self, material, amount=0):
-
+    def add_material(self, material, amount):
+        print("adding")
+        print(self.materials, material, amount)
         if str(material) in self.materials: # This checks to avoid error, and to make sure to add to the player's materials if it's not there
+            print("exists, adding")
             self.materials[str(material)] += amount
         else:
-            self.materials[str(material)] = amount
+            print("doesn't exist, adding now.")
+            try:
+                self.materials[material] = amount # < Gotta be breaking on this line
+            except Exception as e:
+                print("OOPS", e)
+        print("If you only see 2 messages, fuck you.")
 
 # When I save player data I will have to construct a dict of mana, health, and whatnot as well as putting job/race in there as well.
 #

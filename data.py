@@ -105,10 +105,10 @@ def load_player(player_id):
     mana        = character['mana']
     max_mana    = character['max_mana']
     skillpoints = character['skillpoints']
-    skills      = p[6]
-    inventory   = p[8]
-    materials   = p[7]
-    gear        = {}
+    skills      = json.loads(p[6])
+    inventory   = json.loads(p[7])
+    materials   = json.loads(p[8])
+    gear        = json.loads(p[9])
     job         = character['job']
 
 

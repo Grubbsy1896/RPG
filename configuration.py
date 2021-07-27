@@ -56,21 +56,6 @@ def load_items_config(path):
 
     return items_config
 
-def load_mine_config(path):
-    mine_config = open_json(path)
-
-    if mine_config == False:
-        print(f"Cannot Read mine.json, please make it at {path}")
-        print("Insert {} into the file and save it and try again.")
-        raise FileExistsError
-
-    if len(mine_config) == 0:
-        mine_config = {
-
-        }
-        save_json(path, mine_config)
-
-    return mine_config
 
 def load_emoji_config(path):
     emoji_config = open_json(path)
@@ -116,6 +101,37 @@ def load_game_settings(path):
                         },
                     },
                 },
+                "mine": {
+                    "commands": {
+                        "mine": {
+                            "aliases": [
+                                "MINE",
+                                "dig",
+                                "DIG",
+                                "mining",
+                                "MINING"
+                            ],
+                            "color": [
+                                117,
+                                89,
+                                54
+                            ],
+                            "materials": {
+                                "Iron":     10, 
+                                "Diamond":  4,  
+                                "Copper":   15, 
+                                "Coal":     15, 
+                                "Gold":     10, 
+                                "Lead":     10, 
+                                "Silver":   10,       
+                                "Tin":      10, 
+                                "Stone":    15, 
+                                "Ruby":     1
+                            },
+                            "cooldown": 30
+                        }
+                    }
+                }
             },
         }
         save_json(path, game_config)
