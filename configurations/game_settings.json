@@ -19,6 +19,19 @@
                     ],
                     "cooldown": 5,
                     "channel": 869432203757621318
+                },
+                "materials": {
+                    "aliases": [
+                        "mats",
+                        "MATS",
+                        "MATERIALS",
+                        "items"
+                    ],
+                    "color": [
+                        25, 
+                        255, 
+                        25
+                    ]
                 }
             }
         },
@@ -50,7 +63,8 @@
                         "Ruby":     1
                     },
                     "cooldown": 30,
-                    "channel": 869268774379982910
+                    "cooldown_message": "Woah Slow Down! You have ***TIME*** seconds left before you can mine again.",
+                    "channel": 869748256119328838
                 }
             }
         }

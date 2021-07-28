@@ -15,7 +15,7 @@ class Character(commands.Cog):
         game_settings = self.client.game_settings['cogs']['character']
 
 
-    def construct_embed(self, user, player):
+    def construct_profile(self, user, player):
         # Getting vars.
         global game_settings
         profile_string = " > [ Ｐｒｏｆｉｌｅ ] "
@@ -58,19 +58,50 @@ class Character(commands.Cog):
 
         return embed
 
+    def construct_materials(self, user, player):
+        
+
+        global game_settings
+
+        author_image = user.avatar_url
+        color = game_settings['commands']['materials']['color']
+
+        mat_string = ""
+        for material in player.materials:
+            emoji = ''
+            if str(material).lower() in emojis:
+                emoji = emojis[str(material).lower()]
+            
+            amount = player.materials[material]
+
+            if amount >= 1:
+                mat_string += f"{amount}x {emoji}{material} \n"
+        
+        embed = discord.Embed(title="", description=mat_string, colour= discord.Colour.from_rgb(color[0], color[1], color[2]))
+        embed.set_author(name=f"{player.name}", icon_url=author_image, url=author_image)
+
+        return embed
+
     @commands.cooldown(1, __main__.game_settings['cogs']['character']['commands']['profile']['cooldown'], commands.BucketType.user)
     @commands.command(aliases=__main__.game_settings['cogs']['character']['commands']['profile']['aliases'])
     async def profile(self, ctx):
         player = __main__.get_player(ctx)
         
-        embed = self.construct_embed(ctx.author, player)
+        embed = self.construct_profile(ctx.author, player)
 
-        await ctx.send(embed=embed)
+        await ctx.send(embed=embed, components= [
+                [Button(style=ButtonStyle.green, label="Materials", custom_id="materials"),
+                Button(style=ButtonStyle.grey, label="Profile", custom_id="profile")]
+            ])
     
     @commands.command()
     async def materials(self, ctx):
         player = __main__.get_player(ctx)
-        await ctx.send(f"{player.materials}")
+        embed = self.construct_materials(ctx.author, player)
+        await ctx.send(embed=embed, components= [
+                [Button(style=ButtonStyle.green, label="Materials", custom_id="materials"),
+                Button(style=ButtonStyle.grey, label="Profile", custom_id="profile")]
+            ])
 
     @commands.command()
     async def devfuck(self, ctx):
@@ -89,10 +120,18 @@ class Character(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
+
         channel = self.client.get_channel(game_settings['commands']['profile']['channel'])
+        amount = 100
+        messages = []
+        async for message in channel.history(limit=amount + 1):
+                messages.append(message)
+
+        await channel.delete_messages(messages)
+
         await channel.send("Request Profile Information", 
                             components = [ 
-                                Button(style=ButtonStyle.blue, label="View Info", custom_id="profile"),
+                                Button(style=ButtonStyle.blue, label="View Info", custom_id="profilesend"),
                             ],
                             
             )
@@ -106,12 +145,22 @@ class Character(commands.Cog):
 
     @commands.Cog.listener()
     async def on_button_click(self, interaction: Interaction):
-        print(interaction.__dict__)
-        if interaction.custom_id == "profile":
+        #print(interaction.__dict__)
+        if str(interaction.custom_id).startswith("profile"):
+            type = 7
+            if str(interaction.custom_id).endswith("send"):
+                type = 4
             player = __main__.get_player("", interaction.user.id, interaction.user.name)
-            content = self.construct_embed(interaction.user, player)
-            await interaction.respond(type=4, embed=content, ephemeral=True)
+            content = self.construct_profile(interaction.user, player)
+            await interaction.respond(type=type, embed=content, ephemeral=True, components= [
+                [Button(style=ButtonStyle.green, label="Materials", custom_id="materials"),
+                Button(style=ButtonStyle.grey, label="Profile", custom_id="profile")]
+            ])
 
+        if interaction.custom_id == "materials":
+            player = __main__.get_player("", interaction.user.id, interaction.user.name)
+            content = self.construct_materials(interaction.user, player)
+            await interaction.respond(type=7, embed=content)
 
 
 def setup(client):

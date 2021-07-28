@@ -1,4 +1,4 @@
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord.utils import *
 import discord 
 import __main__
@@ -44,8 +44,108 @@ class Mine(commands.Cog):
         ores.append(ore)
         ore_weights.append(oredict[ore])
 
-    # print(random.choices(ores, weights=weights)) # random.choices because it's needed.
+    # What generating ores should look like.
+    # print(random.choices(ores, weights=ore_weights)) # random.choices because it's needed.
 
+    #
+    # > Cooldowns for mining
+    # -- I do not need to save these on the player objects or in database because it's all going to be localized within this cog. 
+
+    global cooldowns
+    cooldowns = {}
+
+
+    def mining(self, user, player, channel):
+        # Defining Variables
+        global cooldowns
+
+        if channel != "mine":
+            channel = self.client.get_channel(settings['commands']['mine']['channel'])
+            if int(channel.id) == int(settings['commands']['mine']['channel']):
+                cont = True
+        elif channel == "mine":
+            cont = True
+        else:
+            cont = False
+        # integral to channel-specific 
+        if cont:
+
+            #
+            # Getting the player's cooldown and actioning on it.
+            # -- It's kinda like a gate.
+
+            if str(user.id) in cooldowns:
+                cooldown = cooldowns[str(user.id)]
+            else:
+                # At this point the player probably isn't logged for cooldowns, and we give them no cooldown because they shouldn't have mined yet.
+                cooldowns[str(user.id)] = 0
+                cooldown = -1
+
+
+            if cooldown >= 0:
+                cooldown_string = __main__.game_settings['cogs']['mine']['commands']['mine']['cooldown_message']
+                cooldown_string = cooldown_string.replace("TIME", str(cooldown))
+                return discord.Embed(title="", description=cooldown_string, colour= discord.Colour.from_rgb(255, 25, 25))
+
+
+
+            #
+            # > Getting Pickaxe Data/Stats
+            #
+            if 'pickaxe' in player.equipped_gear:
+                pickaxe = player.equipped_gear['pickaxe']
+
+                if str(pickaxe) in player.inventory and str(pickaxe) != "":
+                    pickaxe = player.inventory[pickaxe]
+                    min_power = pickaxe['min_power']
+                    max_power = pickaxe['max_power']
+                    gear_cooldown = pickaxe['cooldown']
+                    pickaxe_name = f"{pickaxe['name']}"
+                else:
+                    # Default Data, if not yet saved.
+                    min_power = 1
+                    max_power = 3
+                    gear_cooldown = 60
+            else:
+                # Giving the player data. If they do not have it. (For New PLayers)
+                player.equipped_gear['pickaxe'] = ""
+                min_power = 1
+                max_power = 3
+
+            # More room for future logic
+
+            # Default Data
+            if player.equipped_gear['pickaxe'] == "":
+                pickaxe_name = "Borrowed Pickaxe"
+
+            #
+            # > Generating Mined Ores.
+            #
+            ore = random.choices(ores, ore_weights)[0]
+            amount = random.randint(min_power, max_power)
+
+
+
+            #
+            # Editing Player Data
+            #
+
+            player.add_material(ore, amount)
+            cooldowns[str(user.id)] = gear_cooldown
+            player.save_data()
+
+            # 
+            # > Constructing Message
+            #
+            color = settings['commands']['mine']['color'] 
+            action_string = f"You mine {amount} {ore} with {pickaxe_name}"
+
+            color = settings['commands']['mine']['color'] 
+            action_string = f"You mine {amount} {ore} with {pickaxe_name}"
+
+            mine_embed = discord.Embed(title="", description=action_string, colour = discord.Colour.from_rgb(color[0], color[1], color[2]))
+
+            return mine_embed
 
     @commands.cooldown(1,     __main__.game_settings['cogs']['mine']['commands']['mine']['cooldown'], commands.BucketType.user)
     @commands.command(aliases=__main__.game_settings['cogs']['mine']['commands']['mine']['aliases'])
@@ -57,64 +157,13 @@ class Mine(commands.Cog):
 
         # You can only mine in the specified channel.
 
-        if int(ctx.channel.id) == int(settings['commands']['mine']['channel']):
 
+        await ctx.send(embed = self.mining(ctx.author, player, "mine"))
 
-            #
-            # > Getting Pickaxe Data/Stats
-            #
-            print("Fuck 1")
-            if 'pickaxe' in player.equipped_gear:
-                print("Fuck 2")
-                pickaxe = player.equipped_gear['pickaxe']
-                print("Fuck 3")
-
-                if str(pickaxe) in player.inventory and str(pickaxe) != "":
-                    print("Fuck 4")
-                    pickaxe = player.inventory[pickaxe]
-                    min_power = pickaxe['min_power']
-                    max_power = pickaxe['max_power']
-                    pickaxe_name = f"{pickaxe['name']}"
-                else:
-                    print("Fuck 5, where we should be")
-                    min_power = 1
-                    max_power = 3
-            else:
-                print("Fuck 6 and a half")
-                player.equipped_gear['pickaxe'] = ""
-                min_power = 1
-                max_power = 3
-
-            # More room for future logic
-
-            if player.equipped_gear['pickaxe'] == "":
-                pickaxe_name = "Borrowed Pickaxe"
-
-            #
-            # > Generating Mined Ores.
-            #
-            ore = random.choices(ores, ore_weights)[0]
-            amount = random.randint(min_power, max_power)
-
-            # 
-            # > Constructing Message
-            #
-            color = settings['commands']['mine']['color'] 
-            action_string = f"You mine {amount} {ore} with {pickaxe_name}"
-
-            mine_embed = discord.Embed(title="", description=action_string, colour = discord.Colour.from_rgb(color[0], color[1], color[2]))
+    #
+    # Events
+    #
             
-            print("WHY")
-            await ctx.send(embed=mine_embed)
-
-            #
-            # > Saving Data
-            #
-            player.add_material(ore, amount) # < - 
-            print("FUCK SHIT PISS CUNT")
-            player.save_data()
-
-
     @mine.error
     async def mine_error(self, ctx, error):
         if isinstance(error, commands.CommandOnCooldown):
@@ -122,28 +171,46 @@ class Mine(commands.Cog):
             e = discord.Embed(title="", description = msg, colour= discord.Colour.from_rgb(255, 25, 25))
             await ctx.send(embed=e)
 
+
     @commands.Cog.listener()
     async def on_ready(self):
+
         channel = self.client.get_channel(settings['commands']['mine']['channel'])
-        await channel.send("I'm made of stone, end my misery!!!", 
+
+        amount = 100
+        messages = []
+        async for message in channel.history(limit=amount + 1):
+                messages.append(message)
+
+        await channel.delete_messages(messages)
+    
+        await channel.send("The Monsterous Mines", 
                             components = [ 
-                                Button(style=ButtonStyle.blue, label="Attempt To Kill Me!!!", custom_id="mine"),
+                                Button(style=ButtonStyle.red, label="Mine", custom_id="mine"),
                             ],
                             
             )
 
-        # res = await self.client.wait_for("button_click")
-        # if res.channel == channel:
-        #     await res.respond(
-        #         type=InteractionType.ChannelMessageWithSource,
-        #         content=f'{res.component.label} clicked'
-        # )
+        self.update_cooldowns.start()
 
     @commands.Cog.listener()
     async def on_button_click(self, interaction: Interaction):
-        print(interaction.__dict__)
+        #print(interaction.__dict__)
+        player = __main__.get_player("", interaction.user.id, interaction.user.name)
+
         if interaction.custom_id == "mine":
-            await interaction.respond(type=4, content="YOU HIT ME!", ephemeral=True)
+            await interaction.respond(type=4, embed=self.mining(interaction.user, player, "mine"), ephemeral=True)
+
+    #
+    # Tasks
+    #
+
+    @tasks.loop(seconds=1)
+    async def update_cooldowns(self):
+        global cooldowns
+
+        for c in cooldowns:
+            cooldowns[c] -= 1
 
 def setup(client):
     client.add_cog(Mine(client))
