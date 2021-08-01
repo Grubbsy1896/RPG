@@ -4,7 +4,7 @@ from discord.ext import commands
 from discord.utils import get
 from discord_components import *
 
-class Character(commands.Cog):
+class Character(commands.Cog): # This is cog
     def __init__(self, client):
         self.client = client
 
@@ -58,9 +58,7 @@ class Character(commands.Cog):
 
         return embed
 
-    def construct_materials(self, user, player):
-        
-
+    def construct_materials(self, user, player): # getting the materials embed.
         global game_settings
 
         author_image = user.avatar_url
@@ -75,12 +73,16 @@ class Character(commands.Cog):
             amount = player.materials[material]
 
             if amount >= 1:
-                mat_string += f"{amount}x {emoji}{material} \n"
+                mat_string += f"{amount}x {emoji}{material} \n"   # Constructing the total string. 
         
         embed = discord.Embed(title="", description=mat_string, colour= discord.Colour.from_rgb(color[0], color[1], color[2]))
         embed.set_author(name=f"{player.name}", icon_url=author_image, url=author_image)
 
         return embed
+
+    #
+    # Commands
+    #
 
     @commands.cooldown(1, __main__.game_settings['cogs']['character']['commands']['profile']['cooldown'], commands.BucketType.user)
     @commands.command(aliases=__main__.game_settings['cogs']['character']['commands']['profile']['aliases'])
@@ -103,24 +105,22 @@ class Character(commands.Cog):
                 Button(style=ButtonStyle.grey, label="Profile", custom_id="profile")]
             ])
 
-    @commands.command()
-    async def devfuck(self, ctx):
-        players = self.client.players
-        for player in players:
-            player = players[player]
-            await ctx.send({key:value for key, value in player.__dict__.items() if not key.startswith('__') and not callable(key)})
-
     @profile.error
-    async def profile_error(self, ctx, error):
+    async def profile_error(self, ctx, error): # Cooldown Error When !profile is run too much
         if isinstance(error, commands.CommandOnCooldown):
             msg = 'This command is ratelimited, please try again in {:.2f}s'.format(error.retry_after)
             e = discord.Embed(title="", description = msg, colour= discord.Colour.from_rgb(255, 25, 25))
             await ctx.send(embed=e)
 
-
+    #
+    # Events
+    #
+    
     @commands.Cog.listener()
     async def on_ready(self):
-
+        #
+        # Clearing the channel configured for the button for the profile.
+        #
         channel = self.client.get_channel(game_settings['commands']['profile']['channel'])
         amount = 100
         messages = []
@@ -129,35 +129,30 @@ class Character(commands.Cog):
 
         await channel.delete_messages(messages)
 
+        # Sending the button
         await channel.send("Request Profile Information", 
                             components = [ 
                                 Button(style=ButtonStyle.blue, label="View Info", custom_id="profilesend"),
-                            ],
-                            
+                            ],     
             )
-
-        # res = await self.client.wait_for("button_click")
-        # if res.channel == channel:
-        #     await res.respond(
-        #         type=InteractionType.ChannelMessageWithSource,
-        #         content=f'{res.component.label} clicked'
-        # )
 
     @commands.Cog.listener()
     async def on_button_click(self, interaction: Interaction):
-        #print(interaction.__dict__)
-        if str(interaction.custom_id).startswith("profile"):
-            type = 7
+
+        if str(interaction.custom_id).startswith("profile"): # this is to save copy pasting the entire function again.
+            type = 7 # Editing
             if str(interaction.custom_id).endswith("send"):
-                type = 4
+                type = 4 # Sending
+
             player = __main__.get_player("", interaction.user.id, interaction.user.name)
             content = self.construct_profile(interaction.user, player)
-            await interaction.respond(type=type, embed=content, ephemeral=True, components= [
+
+            await interaction.respond(type=type, embed=content, ephemeral=True, components= [  # Sending the button
                 [Button(style=ButtonStyle.green, label="Materials", custom_id="materials"),
                 Button(style=ButtonStyle.grey, label="Profile", custom_id="profile")]
             ])
 
-        if interaction.custom_id == "materials":
+        if interaction.custom_id == "materials": # materials
             player = __main__.get_player("", interaction.user.id, interaction.user.name)
             content = self.construct_materials(interaction.user, player)
             await interaction.respond(type=7, embed=content)

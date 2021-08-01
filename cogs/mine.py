@@ -10,7 +10,8 @@ class Mine(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-
+        global emojis
+        emojis = self.client.custom_emojis
     # default_mine_settings = {
     #     "materials": {
     #             "Iron":     10, 
@@ -31,6 +32,8 @@ class Mine(commands.Cog):
 
     global settings
     settings = __main__.game_settings['cogs']['mine']
+
+
 
     oredict = settings['commands']['mine']['materials']
 
@@ -137,11 +140,17 @@ class Mine(commands.Cog):
             # 
             # > Constructing Message
             #
+
+            emoji = ''
+            if str(ore).lower() in emojis:
+                emoji = emojis[str(ore).lower()]
+                emoji += " "
+
             color = settings['commands']['mine']['color'] 
             action_string = f"You mine {amount} {ore} with {pickaxe_name}"
 
             color = settings['commands']['mine']['color'] 
-            action_string = f"You mine {amount} {ore} with {pickaxe_name}"
+            action_string = f"You mine {amount} {str(emoji)}{ore} with {pickaxe_name}"
 
             mine_embed = discord.Embed(title="", description=action_string, colour = discord.Colour.from_rgb(color[0], color[1], color[2]))
 
@@ -153,11 +162,8 @@ class Mine(commands.Cog):
         global ores
         global ore_weights
         player = __main__.get_player(ctx)
-        
-
+    
         # You can only mine in the specified channel.
-
-
         await ctx.send(embed = self.mining(ctx.author, player, "mine"))
 
     #
@@ -175,6 +181,7 @@ class Mine(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
 
+        # Creating the mine button 
         channel = self.client.get_channel(settings['commands']['mine']['channel'])
 
         amount = 100
@@ -184,9 +191,9 @@ class Mine(commands.Cog):
 
         await channel.delete_messages(messages)
     
-        await channel.send("The Monsterous Mines", 
+        await channel.send(f"{settings['commands']['mine']['name']}", 
                             components = [ 
-                                Button(style=ButtonStyle.red, label="Mine", custom_id="mine"),
+                                Button(style=ButtonStyle.red, label="Mine ⛏", custom_id="mine"),
                             ],
                             
             )
