@@ -1,6 +1,7 @@
 {
     "Info": "This is where we store settings for all the different portions of the game.",
     "currency_name": "Coins",
+    "game_masters": [289547142559694850],
     "cogs": {
         "character": {
             "commands": {
@@ -64,7 +65,8 @@
                     },
                     "cooldown": 30,
                     "cooldown_message": "Woah Slow Down! You have ***TIME*** seconds left before you can mine again.",
-                    "channel": 869748256119328838
+                    "channel": 869748256119328838,
+                    "name": "The Great Gelatinous Mines"
                 }
             }
         }

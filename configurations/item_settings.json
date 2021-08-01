@@ -1,0 +1,23 @@
+{
+    "bronze_pickaxe": {
+        "name": "Bronze Pickaxe",
+        "flavor": "An Honest Miner's Pickaxe.",
+        "category": "Tools",
+        "type": "Pickaxe",
+        "rarity": "Common",
+        "base_stats": {
+            "min_power": 0,
+            "max_power": 1,
+            "cooldown": 60,
+            "type_yield": 1
+        },
+        "mod_range": {
+            "-1": 10,
+            "0": 50,
+            "1": 20,
+            "2": 10,
+            "3": 10
+        },
+        "value": 100
+    }
+}
