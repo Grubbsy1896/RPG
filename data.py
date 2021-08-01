@@ -112,5 +112,5 @@ def load_player(player_id):
     job         = character['job']
 
 
-    player = (player_id, name, cash, xp, level, health, mana, max_mana, skills, skillpoints, inventory, materials, gear, job)
+    player = (player_id, name, cash, xp, level, health, mana, max_mana, skillpoints, skills, inventory, materials, gear, job)
     return player

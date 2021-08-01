@@ -24,6 +24,7 @@ import random
 import datetime
 
 from random import randint
+from datetime import date
 
 # Import from other files
 from configuration import * # bot_settings, print_players
@@ -99,8 +100,19 @@ async def on_ready(): # When the bot connects to discord it prints the following
     DiscordComponents(client)
 
 
+    # https://stackoverflow.com/questions/151199/how-to-calculate-number-of-days-between-two-given-dates
+    day = date.today()
+    d0 = date(2021, 7, 18)
+    d1 = date(day.year, day.month, day.day)
+    delta = d1 - d0
+    days_since = delta.days
+
+    await client.change_presence(activity=discord.Game(name=f"Day {days_since} of Development"))
+
 # Running the bot.
 
 client.load_extension("cogs.character") # "cogs.mine", 
 client.load_extension("cogs.mine")
-client.run(token)
+client.load_extension("cogs.items")
+client.load_extension("cogs.shop")
+client.run(token)    

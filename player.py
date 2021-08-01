@@ -5,6 +5,7 @@
 
 from discord import Member
 from data import save_player
+from configuration import items
 
 import sqlite3
 
@@ -123,19 +124,19 @@ class Player(): # Subclassing Discord's Member.
         print("adding")
         print(self.materials, material, amount)
         if str(material) in self.materials: # This checks to avoid error, and to make sure to add to the player's materials if it's not there
-            print("exists, adding")
             self.materials[str(material)] += amount
         else:
-            print("doesn't exist, adding now.")
+            
             try:
-                self.materials[material] = amount # < Gotta be breaking on this line
+                self.materials[material] = amount 
             except Exception as e:
                 print("OOPS", e)
-        print("If you only see 2 messages, fuck you.")
+    
+    def add_item(self, id): 
+        
+        # We need to know whether the id is a valid item id, and then proceed from there.
 
-# When I save player data I will have to construct a dict of mana, health, and whatnot as well as putting job/race in there as well.
-#
-#
+        if id in items:
+            # Congrats, we didn't fuck up. or something 
+            pass
 
-
-# I need to finish it but yeah.
