@@ -105,6 +105,11 @@ class Character(commands.Cog): # This is cog
                 Button(style=ButtonStyle.grey, label="Profile", custom_id="profile")]
             ])
 
+    @commands.command()
+    async def inventory(self, ctx):
+        player = __main__.get_player(ctx)
+        await ctx.send(f"Inventory: \n{player.inventory}")
+
     @profile.error
     async def profile_error(self, ctx, error): # Cooldown Error When !profile is run too much
         if isinstance(error, commands.CommandOnCooldown):

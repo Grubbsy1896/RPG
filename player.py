@@ -7,7 +7,7 @@ from discord import Member
 from data import save_player
 from configuration import items
 
-import sqlite3
+import random
 
 #
 # Cash will be representative of the currency someone has
@@ -132,11 +132,71 @@ class Player(): # Subclassing Discord's Member.
             except Exception as e:
                 print("OOPS", e)
     
-    def add_item(self, id): 
+    def add_item(self, iid): 
         
         # We need to know whether the id is a valid item id, and then proceed from there.
 
-        if id in items:
-            # Congrats, we didn't fuck up. or something 
-            pass
+        if iid in items:
+            # Congrats, we didn't fuck up... or something 
+            
+            item = items[iid]
+
+
+            # For the most part, we're just copying values over.
+
+            custom_item = {
+                "name": item['name'],
+                "flavor": item['flavor'],
+                "category": item['category'],
+                "type": item['type'],
+                "rarity": item['rarity'],
+                "value": item['value'],
+                "base_stats": {},
+                "original_owner": self.name,
+                "enchantments": [],
+                "forges": 0
+            }
+
+            # Constructing the base stats
+
+            modifiers = []
+            weights = []
+
+            for i in item['mod_range']:
+                modifiers.append(int(i))
+                weights.append(int(item['mod_range'][i]))
+
+            for stat in item['base_stats']:
+                new_stat = random.choices(modifiers, weights)
+                custom_item["base_stats"][stat] = item['base_stats'][stat] + new_stat[0]
+
+            
+            if custom_item['base_stats']['min_power'] > custom_item['base_stats']['max_power']:
+                temp = custom_item['base_stats']['min_power']
+                custom_item['base_stats']['min_power'] = custom_item['base_stats']['max_power']
+                custom_item['base_stats']['max_power'] = temp
+
+
+            # Adding Item To Player
+            print(custom_item)
+
+            # getting the item id to assign to the item.
+            item_id = str(len(self.inventory)+1)
+            if item_id in self.inventory:
+                item_id = self.get_new_item_id()
+
+            self.inventory[item_id] = custom_item
+
+    def get_new_item_id(self, offset=0):
+        inv = self.inventory
+        if str(offset) in inv:
+            self.get_new_item_id(offset+1)
+        else:
+            return offset
+
+
+
+
+
+
 

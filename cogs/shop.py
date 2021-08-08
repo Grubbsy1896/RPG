@@ -70,9 +70,20 @@ class Shop(commands.Cog):
             embed = discord.Embed(title=f"{shops[store]['name']}")
             Items = self.client.get_cog("Items")
             for i in store_items:
+                add = True
                 embed.add_field(name=f"{items[i]['name']}", value=f"{store_items[i]['price']} {self.client.currency} \n{items[i]['flavor']} \n**Stats**: \n {Items.construct_item_stats_string(i)}")
-                item_list.append(SelectOption(label=f"{items[i]['name']}", description=f"{store_items[i]['price']} {self.client.currency}", value=i))
-            menu = Select(options=item_list)
+                stock = store_items[i]['stock']
+                stockstr = ""
+                if str(stock) != "infinite":
+                    if int(stock) >= 1:
+                        add = True
+                        stockstr = f", In Stock: {stock}"
+                    else:
+                        add = False
+                
+                if add:
+                    item_list.append(SelectOption(label=f"{items[i]['name']}", description=f"{store_items[i]['price']} {self.client.currency}{stockstr}", value=f"{i}|{store}"))
+            menu = Select(options=item_list, placeholder="Select An Item To Buy")
 
             
 
@@ -83,7 +94,7 @@ class Shop(commands.Cog):
 
         data = self.shop_menu()
         print(data)
-        await ctx.send(content = "Shop", embed=data[0], components=data[1])
+        await ctx.send(content = "G_ Town Market", embed=data[0], components=data[1])
 
 
     @commands.Cog.listener()
@@ -100,6 +111,48 @@ class Shop(commands.Cog):
             await interaction.respond(type=4, embed=message[0], components=[message[1]])
             # name = interaction.component[0].
 
+        if str(interaction.custom_id).startswith("buy"):
+            v = interaction.custom_id
+            value = v.split("|")
+            shop = value[2]
+            item = value[1]
+
+            # Working on adding items to players.
+
+            player.cash -= shops[shop]['items'][item]['price']
+
+            player.add_item(item)
+
+            await interaction.respond(type=4, embed=discord.Embed(description=f"You buy {items[item]['name']} for {shops[shop]['items'][item]['price']} {self.client.currency}."))
+
+            if shops[shop]['items'][item]['stock'] != "infinite":
+                shops[shop]['items'][item]['stock'] -= 1
+                __main__.save_json(f"{__main__.ROOT_DIR}/shops.json", shops)
+
+    @commands.Cog.listener()
+    async def on_select_option(self, interaction: Interaction):
+        #print(interaction.__dict__)
+        print("Selected Item, ", interaction.component[0].label)
+        print(interaction.component)
+
+        v = interaction.component[0].value
+        value = v.split("|")
+        
+        shop = value[1]
+        item = value[0]
+
+        price = shops[shop]['items'][item]['price']
+
+        player = __main__.get_player("", interaction.user.id, interaction.user.name)
+
+        if player.cash >= price:
+
+            await interaction.respond(type=4, content=f"You selected {items[item]['name']} from {shops[shop]['name']} for {price} {self.client.currency} \n Confirm Purchase?", components=[
+                [Button(style=ButtonStyle.green, label="Yes", custom_id=f"buy|{v}"), Button(style=ButtonStyle.red, label="Cancel Purchase", custom_id="cancel")]
+            ])
+
+        else:
+            await interaction.respond(type=4, embed=discord.Embed(title="", description="You cannot afford that item."))
 
 def setup(client):
     client.add_cog(Shop(client))

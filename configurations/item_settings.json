@@ -6,10 +6,9 @@
         "type": "Pickaxe",
         "rarity": "Common",
         "base_stats": {
-            "min_power": 0,
-            "max_power": 1,
-            "cooldown": 60,
-            "type_yield": 1
+            "min_power": 2,
+            "max_power": 4,
+            "cooldown": 60
         },
         "mod_range": {
             "-1": 10,
