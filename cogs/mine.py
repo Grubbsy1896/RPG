@@ -26,9 +26,7 @@ class Mine(commands.Cog):
     #             "Ruby":     1
     #         }, # I want the total to be 100, 0 left.
     #     "cooldown": 30,
-    #     "channel": 869268774379982910,
-    #     "NULL": None
-    # }
+    #     }
 
     global settings
     settings = __main__.game_settings['cogs']['mine']
@@ -90,8 +88,6 @@ class Mine(commands.Cog):
                 cooldown_string = cooldown_string.replace("TIME", str(cooldown))
                 return discord.Embed(title="", description=cooldown_string, colour= discord.Colour.from_rgb(255, 25, 25))
 
-
-
             #
             # > Getting Pickaxe Data/Stats
             #
@@ -126,8 +122,6 @@ class Mine(commands.Cog):
             #
             ore = random.choices(ores, ore_weights)[0]
             amount = random.randint(min_power, max_power)
-
-
 
             #
             # Editing Player Data
@@ -176,7 +170,6 @@ class Mine(commands.Cog):
             msg = 'You must wait {:.2f}s before mining again. Rest easy!'.format(error.retry_after)
             e = discord.Embed(title="", description = msg, colour= discord.Colour.from_rgb(255, 25, 25))
             await ctx.send(embed=e)
-
 
     @commands.Cog.listener()
     async def on_ready(self):

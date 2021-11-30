@@ -26,6 +26,9 @@ class Items(commands.Cog):
     global items  
     items = __main__.items
 
+    global materials
+    materials = __main__.materials
+
     global admins
     admins = __main__.game_settings['game_masters']
 
@@ -84,6 +87,24 @@ class Items(commands.Cog):
         else:
             await ctx.send(f"You don't have permission to do this.")
         
+    @commands.command(aliases=["createmat"])
+    async def creatematerial(self, ctx, mat, name="", value=1, description=""):
+        global materials
+        path = f"{__main__.configspath}/materials.json"
+
+
+        if ctx.author.id in admins:
+            material = {
+                "name": name, 
+                "value": int(value),
+                "description": description
+            }
+
+            materials[mat] = material
+
+            await ctx.send("You created the item successfully. Restart the bot for the changes to take effect.")
+
+            __main__.save_json(path, materials)
 
 
 def setup(client):

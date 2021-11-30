@@ -15,6 +15,7 @@ class Character(commands.Cog): # This is cog
         game_settings = self.client.game_settings['cogs']['character']
 
 
+    # Returns an embed
     def construct_profile(self, user, player):
         # Getting vars.
         global game_settings
@@ -58,6 +59,7 @@ class Character(commands.Cog): # This is cog
 
         return embed
 
+    # Returns an embed
     def construct_materials(self, user, player): # getting the materials embed.
         global game_settings
 
@@ -79,6 +81,64 @@ class Character(commands.Cog): # This is cog
         embed.set_author(name=f"{player.name}", icon_url=author_image, url=author_image)
 
         return embed
+
+    # Returns an embed and buttons in a list size 2
+    def construct_inventory(self, user, player, index=0):
+
+        author_image = user.avatar_url
+
+        stat_strings = {
+            "min_power": "Minimum Power",
+            "max_power": "Maximum Power",
+            "cooldown":  "Cooldown",
+            "type_yield": "Ore Yield"
+        }
+
+        invlist = []
+
+        for i in player.inventory:
+            invlist.append(i)
+        
+        n = 5
+        pages = [invlist[i:i + n] for i in range(0, len(invlist), n)]
+
+        if index < len(pages) and index >= 0:
+            # So we're in the pages list, most likely...
+
+            page = pages[index]
+
+            invbed = discord.Embed()
+
+            for item in page:
+                item = player.inventory[item]
+                string  = ""
+                string += f"*{item['flavor']}* \n"
+                string += f"{item['category']}, {item['type']} \n"
+                string += f"{item['rarity']} \n"
+                string += f"-- Stats -- \n"
+                for stat in item['base_stats']:
+                    string += f"**{stat_strings[stat]}**: {item['base_stats'][stat]} \n"
+                invbed.add_field(name=f"{item['name']}", value=string)
+
+            # Constructing Buttons To Add.
+
+            prev = False
+            nxtp = False
+            if index == 0:
+                prev = True
+            if index == len(pages)-1:
+                nxtp = True
+
+            #print("Prev, ", prev, "   Next, ", nxtp)
+            buttons = [Button(label="Prev", style=ButtonStyle.gray, custom_id=f"invpage|{index-1}",disabled=prev), 
+                       Button(label="Next", style=ButtonStyle.gray, custom_id=f"invpage|{index+1}",disabled=nxtp)]
+
+            return [invbed, buttons]
+
+
+        else:
+            return [discord.Embed(title="No Items."), [Button(style=ButtonStyle.grey, label="Profile", custom_id="profile")]]
+
 
     #
     # Commands
@@ -108,8 +168,13 @@ class Character(commands.Cog): # This is cog
     @commands.command()
     async def inventory(self, ctx):
         player = __main__.get_player(ctx)
-        await ctx.send(f"Inventory: \n{player.inventory}")
-
+        embed = self.construct_inventory(ctx.author, player)
+        await ctx.send(embed=embed[0], components= [
+                embed[1],
+                [Button(style=ButtonStyle.green, label="Materials", custom_id="materials"),
+                Button(style=ButtonStyle.grey, label="Profile", custom_id="profile")]
+            ])
+            
     @profile.error
     async def profile_error(self, ctx, error): # Cooldown Error When !profile is run too much
         if isinstance(error, commands.CommandOnCooldown):
@@ -154,7 +219,8 @@ class Character(commands.Cog): # This is cog
 
             await interaction.respond(type=type, embed=content, ephemeral=True, components= [  # Sending the button
                 [Button(style=ButtonStyle.green, label="Materials", custom_id="materials"),
-                Button(style=ButtonStyle.grey, label="Profile", custom_id="profile")]
+                Button(style=ButtonStyle.grey, label="Profile", custom_id="profile"),
+                Button(style=ButtonStyle.red, label="Inventory", custom_id="invpage|0")]
             ])
 
         if interaction.custom_id == "materials": # materials
@@ -162,11 +228,20 @@ class Character(commands.Cog): # This is cog
             content = self.construct_materials(interaction.user, player)
             await interaction.respond(type=7, embed=content)
 
+        if str(interaction.custom_id).startswith("invpage"):
+            player = __main__.get_player("", interaction.user.id, interaction.user.name)
+            if player.id == interaction.author.id: 
+                l = str(interaction.custom_id).split("|")
+                index = int(l[1])
+                content = self.construct_inventory(interaction.user, player, index)
+                await interaction.respond(type=4, embed=content[0], components=[content[1]])
+            else:
+                content = self.construct_inventory(interaction.user, player)
+                await interaction.respond(type=4, embed=content[0], components=[content[1]])
+
 
 def setup(client):
     client.add_cog(Character(client))
-
-
 
 
 # so let's say I'm at 200xp 

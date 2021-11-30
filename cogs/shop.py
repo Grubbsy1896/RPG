@@ -51,7 +51,7 @@ class Shop(commands.Cog):
             elif len(buttons[2]) < 5:
                 buttons[2].append(Button(label=f"{shops[shop]['name']}", custom_id=f"menu{shops[shop]['name']}"))
 
-        print("BEFORE", buttons)
+        #print("BEFORE", buttons)
         for i in range(0, len(buttons)):
             try:
                 buttons.remove([])
@@ -60,18 +60,24 @@ class Shop(commands.Cog):
 
         return [embed, buttons]
 
-    def shop_menu_2(self, shop):
+    def shop_menu_2(self, shop, ind=0):
         store = str(shop).replace("menu", "")
-        print(store, shops)
+        #print(store, shops)
         if store in shops:
             store_items = shops[store]['items']
             item_list = []
 
-            embed = discord.Embed(title=f"{shops[store]['name']}")
+            embed = discord.Embed(title=f"{shops[store]['name']}", description="Select An Item In The Dropdown to view it's stats.")
             Items = self.client.get_cog("Items")
+            
+            # This is me creating the 1 field of the embed that will display what item is being focused on. 
+            i = list(store_items)[ind]
+            embed.add_field(name=f"{items[i]['name']}", value=f"{store_items[i]['price']} {self.client.currency} \n{items[i]['flavor']} \n**Stats**: \n {Items.construct_item_stats_string(i)}")
+
+            # This is creating the select menu so that the user can choose what item to focus on and whatnot. 
+            index = 0
             for i in store_items:
                 add = True
-                embed.add_field(name=f"{items[i]['name']}", value=f"{store_items[i]['price']} {self.client.currency} \n{items[i]['flavor']} \n**Stats**: \n {Items.construct_item_stats_string(i)}")
                 stock = store_items[i]['stock']
                 stockstr = ""
                 if str(stock) != "infinite":
@@ -82,8 +88,13 @@ class Shop(commands.Cog):
                         add = False
                 
                 if add:
-                    item_list.append(SelectOption(label=f"{items[i]['name']}", description=f"{store_items[i]['price']} {self.client.currency}{stockstr}", value=f"{i}|{store}"))
-            menu = Select(options=item_list, placeholder="Select An Item To Buy")
+                    item_list.append(SelectOption(label=f"{items[i]['name']}", description=f"{store_items[i]['price']} {self.client.currency}{stockstr}", value=f"buy|{i}|{store}|{index}"))
+
+                # Ticking the tracked index up one ffs. 
+                # Because I'm doing this not kosher but It'll get there someday. 
+                index += 1 
+
+            menu = Select(options=item_list, placeholder="Select An Item To Buy/Preview", custom_id="store")
 
             
 
@@ -93,7 +104,7 @@ class Shop(commands.Cog):
     async def shop(self, ctx):
 
         data = self.shop_menu()
-        print(data)
+        #print(data)
         await ctx.send(content = "G_ Town Market", embed=data[0], components=data[1])
 
 
@@ -109,7 +120,7 @@ class Shop(commands.Cog):
             message = self.shop_menu_2(interaction.custom_id)
 
             await interaction.respond(type=4, embed=message[0], components=[message[1]])
-            # name = interaction.component[0].
+            # name = interaction.component.label[0].
 
         if str(interaction.custom_id).startswith("buy"):
             v = interaction.custom_id
@@ -127,32 +138,59 @@ class Shop(commands.Cog):
 
             if shops[shop]['items'][item]['stock'] != "infinite":
                 shops[shop]['items'][item]['stock'] -= 1
-                __main__.save_json(f"{__main__.ROOT_DIR}/shops.json", shops)
+                __main__.save_json(f"{__main__.ROOT_DIR}/configurations/shops.json", shops)
+
+                player.save_data()
+        if str(interaction.custom_id).startswith("cancel"):
+            await interaction.respond(type=7, ephemeral=True, content="Action Canceled.")
+
+
 
     @commands.Cog.listener()
     async def on_select_option(self, interaction: Interaction):
-        #print(interaction.__dict__)
-        print("Selected Item, ", interaction.component[0].label)
-        print(interaction.component)
+        #print(interaction.component)
+        #print("Selected Item, ", interaction.component.label)
+        #print(interaction.values)
 
-        v = interaction.component[0].value
+        #print(interaction.custom_id)
+
+        v = interaction.values[0]
         value = v.split("|")
         
-        shop = value[1]
-        item = value[0]
+        mode =     value[0]
+        shop =     value[2]
+        item =     value[1]
+        inde = int(value[3])
 
-        price = shops[shop]['items'][item]['price']
+        if interaction.custom_id == "store":
 
-        player = __main__.get_player("", interaction.user.id, interaction.user.name)
+            price = shops[shop]['items'][item]['price']
 
-        if player.cash >= price:
+            player = __main__.get_player("", interaction.user.id, interaction.user.name)
 
-            await interaction.respond(type=4, content=f"You selected {items[item]['name']} from {shops[shop]['name']} for {price} {self.client.currency} \n Confirm Purchase?", components=[
-                [Button(style=ButtonStyle.green, label="Yes", custom_id=f"buy|{v}"), Button(style=ButtonStyle.red, label="Cancel Purchase", custom_id="cancel")]
-            ])
+            #
+            # Updating Store Page to reflect the proper data
+            #
 
-        else:
-            await interaction.respond(type=4, embed=discord.Embed(title="", description="You cannot afford that item."))
+            data = self.shop_menu_2(shop, inde)
+            embe = data[0]
+            select = data[1]
+            components = [select]
+
+            if player.cash >= price:
+                components.append([Button(style=ButtonStyle.green, label="Buy Item", custom_id=f"buy|{item}|{shop}"), Button(style=ButtonStyle.red, label="Cancel Purchase (Closes The Store)", custom_id="cancel")])
+
+            await interaction.respond(type=7, embed=embe, components=components)
+            #print("Damn ")
+
+            # if player.cash >= price:
+            #     await asyncio.sleep(1)
+            #     await interaction.respond(type=4, content=f"You selected {items[item]['name']} from {shops[shop]['name']} for {price} {self.client.currency} \n Confirm Purchase?", components=[
+            #         [Button(style=ButtonStyle.green, label="Yes", custom_id=f"buy|{item}|{shop}"), Button(style=ButtonStyle.red, label="Cancel Purchase", custom_id="cancel")]
+            #     ])
+
+            # else:
+            #     await interaction.respond(type=4, embed=discord.Embed(title="", description="You cannot afford that item."))
 
 def setup(client):
     client.add_cog(Shop(client))
