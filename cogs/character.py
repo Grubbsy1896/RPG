@@ -4,6 +4,11 @@ from discord.ext import commands
 from discord.utils import get
 from discord_components import *
 
+#
+# This cog is meant for any and all functions relating to a player managing their own data.
+# Functions to construct profiles and inventories and whatnot as well.
+#
+
 class Character(commands.Cog): # This is cog
     def __init__(self, client):
         self.client = client
@@ -13,6 +18,9 @@ class Character(commands.Cog): # This is cog
 
         global game_settings 
         game_settings = self.client.game_settings['cogs']['character']
+
+    standard_buttons = [Button(style=ButtonStyle.green, label="Materials", custom_id="materials"),
+        Button(style=ButtonStyle.grey, label="Profile", custom_id="profile")]
 
 
     # Returns an embed
@@ -58,29 +66,53 @@ class Character(commands.Cog): # This is cog
         embed.add_field(name="----- [ Skills ] -----", value=field_3)
 
         return embed
-
-    # Returns an embed
-    def construct_materials(self, user, player): # getting the materials embed.
+ 
+    # Returns an embed and now 2 buttons.
+    def construct_materials(self, user, player, ind=0): # getting the materials embed.
         global game_settings
 
         author_image = user.avatar_url
         color = game_settings['commands']['materials']['color']
 
         mat_string = ""
-        for material in player.materials:
-            emoji = ''
-            if str(material).lower() in emojis:
-                emoji = emojis[str(material).lower()]
-            
-            amount = player.materials[material]
+        i = ind
 
-            if amount >= 1:
-                mat_string += f"{amount}x {emoji}{material} \n"   # Constructing the total string. 
+        matlist = list(player.materials)
+
+        pages = [matlist[i:i + 5] for i in range(0, len(matlist), 5)]
+
+        prev = False
+        nxtp = False
+        if ind == 0:
+            prev = True
+        if ind == len(pages)-1:
+            nxtp = True
+
+
+        for material in pages[ind]:
+            if i < (ind+5): # Testing will only display 5 mats per page.
+                emoji = ''
+                if str(material).lower() in emojis:
+                    emoji = emojis[str(material).lower()]
+                
+                amount = player.materials[material]
+
+                if amount >= 1:
+                    mat_string += f"{amount}x {emoji}{material} \n"   # Constructing the total string. 
         
         embed = discord.Embed(title="", description=mat_string, colour= discord.Colour.from_rgb(color[0], color[1], color[2]))
         embed.set_author(name=f"{player.name}", icon_url=author_image, url=author_image)
 
-        return embed
+
+
+        #print("Prev, ", prev, "   Next, ", nxtp)
+        buttons = [Button(label="Prev", style=ButtonStyle.gray, custom_id=f"matpage|{ind-1}",disabled=prev), 
+                    Button(label="Next", style=ButtonStyle.gray, custom_id=f"matpage|{ind+1}",disabled=nxtp)]
+
+
+
+
+        return [embed, buttons]
 
     # Returns an embed and buttons in a list size 2
     def construct_inventory(self, user, player, index=0):
@@ -139,7 +171,6 @@ class Character(commands.Cog): # This is cog
         else:
             return [discord.Embed(title="No Items."), [Button(style=ButtonStyle.grey, label="Profile", custom_id="profile")]]
 
-
     #
     # Commands
     #
@@ -151,18 +182,17 @@ class Character(commands.Cog): # This is cog
         
         embed = self.construct_profile(ctx.author, player)
 
-        await ctx.send(embed=embed, components= [
-                [Button(style=ButtonStyle.green, label="Materials", custom_id="materials"),
-                Button(style=ButtonStyle.grey, label="Profile", custom_id="profile")]
-            ])
+        await ctx.send(embed=embed, components= [self.standard_buttons])
     
     @commands.command()
     async def materials(self, ctx):
         player = __main__.get_player(ctx)
-        embed = self.construct_materials(ctx.author, player)
+        data = self.construct_materials(ctx.author, player)
+        embed = data[0]
+        buttons = data[1]
         await ctx.send(embed=embed, components= [
-                [Button(style=ButtonStyle.green, label="Materials", custom_id="materials"),
-                Button(style=ButtonStyle.grey, label="Profile", custom_id="profile")]
+                buttons, # this puts the arrow buttons above the others
+                self.standard_buttons
             ])
 
     @commands.command()
@@ -171,8 +201,7 @@ class Character(commands.Cog): # This is cog
         embed = self.construct_inventory(ctx.author, player)
         await ctx.send(embed=embed[0], components= [
                 embed[1],
-                [Button(style=ButtonStyle.green, label="Materials", custom_id="materials"),
-                Button(style=ButtonStyle.grey, label="Profile", custom_id="profile")]
+                self.standard_buttons
             ])
             
     @profile.error
@@ -201,45 +230,50 @@ class Character(commands.Cog): # This is cog
 
         # Sending the button
         await channel.send("Request Profile Information", 
-                            components = [ 
-                                Button(style=ButtonStyle.blue, label="View Info", custom_id="profilesend"),
-                            ],     
-            )
+                            components = [  Button(style=ButtonStyle.blue, label="View Info", custom_id="profilesend") ])
 
     @commands.Cog.listener()
     async def on_button_click(self, interaction: Interaction):
+
+        player = __main__.get_player("", interaction.user.id, interaction.user.name)
 
         if str(interaction.custom_id).startswith("profile"): # this is to save copy pasting the entire function again.
             type = 7 # Editing
             if str(interaction.custom_id).endswith("send"):
                 type = 4 # Sending
 
-            player = __main__.get_player("", interaction.user.id, interaction.user.name)
+            #player = __main__.get_player("", interaction.user.id, interaction.user.name)
             content = self.construct_profile(interaction.user, player)
 
             await interaction.respond(type=type, embed=content, ephemeral=True, components= [  # Sending the button
-                [Button(style=ButtonStyle.green, label="Materials", custom_id="materials"),
-                Button(style=ButtonStyle.grey, label="Profile", custom_id="profile"),
-                Button(style=ButtonStyle.red, label="Inventory", custom_id="invpage|0")]
+                self.standard_buttons + [Button(style=ButtonStyle.red, label="Inventory", custom_id="invpage|0")]
             ])
 
         if interaction.custom_id == "materials": # materials
-            player = __main__.get_player("", interaction.user.id, interaction.user.name)
+            #player = __main__.get_player("", interaction.user.id, interaction.user.name)
             content = self.construct_materials(interaction.user, player)
-            await interaction.respond(type=7, embed=content)
+            await interaction.respond(type=7, embed=content[0], components=[content[1], self.standard_buttons])
 
-        if str(interaction.custom_id).startswith("invpage"):
-            player = __main__.get_player("", interaction.user.id, interaction.user.name)
-            if player.id == interaction.author.id: 
+        if str(interaction.custom_id).startswith("invpage") or str(interaction.custom_id).startswith("matpage"):
+            #player = __main__.get_player("", interaction.user.id, interaction.user.name)
+            index = 0 
+            type = 4
+
+            if int(player.id) == int(interaction.author.id): 
                 l = str(interaction.custom_id).split("|")
                 index = int(l[1])
+                type = 7
+
+            if str(interaction.custom_id).startswith("invpage"):
                 content = self.construct_inventory(interaction.user, player, index)
-                await interaction.respond(type=4, embed=content[0], components=[content[1]])
-            else:
-                content = self.construct_inventory(interaction.user, player)
-                await interaction.respond(type=4, embed=content[0], components=[content[1]])
+            if str(interaction.custom_id).startswith("matpage"):
+                content = self.construct_materials(interaction.user, player, index)
+
+            print("Page Sent: ", index)
+            await interaction.respond(type=type, embed=content[0], components=[content[1], self.standard_buttons])
 
 
+        
 def setup(client):
     client.add_cog(Character(client))
 
