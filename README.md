@@ -15,4 +15,4 @@ https://discord.gg/Jp45aC2pyg
 ### Disclaimer
 This bot is a big bot. in it's current state it's no where nearly as polished as the end product will hopefully be. 
 
-THIS PROJECT IS MOST LIKELY GOING TO BE DISCONTINUED DUE TO SCOPE.
+This project is currently in progress once more. 
