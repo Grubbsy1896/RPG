@@ -1,0 +1,59 @@
+{
+    "bronze_pickaxe": {
+        "name": "Bronze Pickaxe",
+        "flavor": "An Honest Miner's Pickaxe.",
+        "category": "Tools",
+        "type": "Pickaxe",
+        "rarity": "Common",
+        "base_stats": {
+            "min_power": 2,
+            "max_power": 4,
+            "cooldown": 60
+        },
+        "mod_range": {
+            "-1": 10,
+            "0": 50,
+            "1": 20,
+            "2": 10,
+            "3": 10
+        },
+        "value": 100
+    },
+    "iron_pickaxe": {
+        "name": "Iron Pickaxe",
+        "flavor": "A pickaxe forged in iron.",
+        "category": "Tools",
+        "type": "Pickaxe",
+        "rarity": "Uncommon",
+        "base_stats": {
+            "min_power": 3,
+            "max_power": 6,
+            "cooldown": 55,
+            "type_yield": 1
+        },
+        "mod_range": {
+            "-1": 10,
+            "0": 50,
+            "1": 20,
+            "2": 10,
+            "3": 10
+        },
+        "value": 100
+    },
+    "first_collectible": {
+        "name": "Beta Tester's Swag",
+        "flavor": "It's really only valuable until a month after the game releases...",
+        "category": "Collectibles",
+        "type": "Keychain",
+        "rarity": "Open",
+        "base_stats": {},
+        "mod_range": {
+            "-1": 10,
+            "0": 50,
+            "1": 20,
+            "2": 10,
+            "3": 10
+        },
+        "value": 100
+    }
+}

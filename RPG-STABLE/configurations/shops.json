@@ -1,0 +1,20 @@
+{
+    "shop": {
+        "name": "Hank's Hardware",
+        "description": "Tools Sold Here",
+        "items": {
+            "bronze_pickaxe": {
+                "price": 100,
+                "stock": "infinite"
+            },
+            "iron_pickaxe": {
+                "price": 1000,
+                "stock": 0
+            },
+            "first_collectible": {
+                "price": 1000000,
+                "stock": 10
+            }
+        }
+    }
+}

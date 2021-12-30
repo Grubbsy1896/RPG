@@ -1,0 +1,74 @@
+{
+    "Info": "This is where we store settings for all the different portions of the game.",
+    "currency_name": "Coins",
+    "game_masters": [289547142559694850],
+    "cogs": {
+        "character": {
+            "commands": {
+                "profile": {
+                    "aliases": [
+                        "character",
+                        "rpg",
+                        "CHARACTER",
+                        "PROFILE",
+                        "RPG"
+                    ],
+                    "color": [
+                        10,
+                        10,
+                        10
+                    ],
+                    "cooldown": 5,
+                    "channel": 869432203757621318
+                },
+                "materials": {
+                    "aliases": [
+                        "mats",
+                        "MATS",
+                        "MATERIALS",
+                        "items"
+                    ],
+                    "color": [
+                        25, 
+                        255, 
+                        25
+                    ]
+                }
+            }
+        },
+        "mine": {
+            "commands": {
+                "mine": {
+                    "aliases": [
+                        "MINE",
+                        "dig",
+                        "DIG",
+                        "mining",
+                        "MINING"
+                    ],
+                    "color": [
+                        117,
+                        89,
+                        54
+                    ],
+                    "materials": {
+                        "Iron":     10, 
+                        "Diamond":  4,  
+                        "Copper":   15, 
+                        "Coal":     15, 
+                        "Gold":     10, 
+                        "Lead":     10, 
+                        "Silver":   10,       
+                        "Tin":      10, 
+                        "Stone":    15, 
+                        "Ruby":     1
+                    },
+                    "cooldown": 30,
+                    "cooldown_message": "Woah Slow Down! You have ***TIME*** seconds left before you can mine again.",
+                    "channel": 869748256119328838,
+                    "name": "The Great Gelatinous Mines"
+                }
+            }
+        }
+    }
+}

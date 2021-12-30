@@ -1,0 +1,52 @@
+{
+    "stone": {
+        "name": "Stone",
+        "value": 1,
+        "description": "Obtained from mining."
+    },
+    "gold": {
+        "name": "Gold",
+        "value": 1,
+        "description": "Obtained from mining."
+    },
+    "copper": {
+        "name": "Copper",
+        "value": 1,
+        "description": "Obtained from mining."
+    },
+    "coal": {
+        "name": "Coal",
+        "value": 1,
+        "description": "Obtained from mining."
+    },
+    "diamond": {
+        "name": "Diamond",
+        "value": 1,
+        "description": "Obtained from mining."
+    },
+    "lead": {
+        "name": "Lead",
+        "value": 1,
+        "description": "Obtained from mining."
+    },
+    "tin": {
+        "name": "Tin",
+        "value": 1,
+        "description": "Obtained from mining."
+    },
+    "iron": {
+        "name": "Iron",
+        "value": 1,
+        "description": "Obtained from mining."
+    },
+    "silver": {
+        "name": "Silver",
+        "value": 1,
+        "description": "Obtained from mining."
+    },
+    "ruby": {
+        "name": "Ruby",
+        "value": 1,
+        "description": "Obtained from mining."
+    }
+}
