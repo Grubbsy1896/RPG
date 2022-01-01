@@ -1,4 +1,6 @@
 # RPG
+**\[Now being made with nextcord]**
+
 A Configurable Discord Bot
 
 Currently this bot will be required that users run and configure their own version of the bot.
